@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zmluvy — autazababku</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{background:#f5f5f7;color:#1d1d1f;padding-bottom:40px}
+.header{background:#1d2433;color:#fff;padding:14px 24px;font-size:18px;font-weight:700;display:flex;align-items:center;gap:12px}
+.header img{height:32px;border-radius:4px}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+/* TABS */
+.ztabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.ztab{padding:9px 16px;border-radius:9px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#555;transition:.15s}
+.ztab.active{background:#1d2433;color:#fff;border-color:#1d2433}
+/* CARDS */
+.card-full{background:#fff;border-radius:12px;border:1px solid #e0e0e0;overflow:hidden;margin-bottom:16px}
+.ch{padding:12px 16px;font-weight:700;font-size:14px;color:#fff;background:#1d2433}
+.ch-blue{background:#1a4a8a}
+.ch-dark{background:#1d2433}
+.cb{padding:14px 16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:680px){.row{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:12px;border:1px solid #e0e0e0;overflow:hidden}
+/* FORM */
+.sec{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 6px}
+.inp{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fafafa;transition:.15s}
+.inp:focus{outline:none;border-color:#378ADD;background:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+/* BUTTONS */
+.btn{padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #ddd;background:#f5f5f7;color:#1d1d1f;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.btn:hover{background:#e8e8ed}
+.btn-dark{background:#2d3441;color:#fff;border:none;width:100%;padding:13px;font-size:15px;font-weight:600;justify-content:center;border-radius:10px;margin-top:10px}
+.btn-dark:hover{background:#378ADD}
+.btn-green{background:#1D9E75;color:#fff;border:none}
+.btn-blue{background:#378ADD;color:#fff;border:none}
+.btn-save{background:#4b5563;color:#fff;border:none;width:100%;padding:11px;font-size:14px;font-weight:600;justify-content:center;border-radius:10px;margin-top:6px}
+/* PERSONS */
+.pc{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid #e0e0e0;margin-bottom:4px;transition:.15s}
+.pc:hover{background:#f5f5f7}
+.pc.app{background:#dbeafe;border-color:#93c5fd}
+.pc.akp{background:#d1fae5;border-color:#6ee7b7}
+.pc.adlz{background:#ede9fe;border-color:#c4b5fd}
+.pn{font-weight:600;font-size:13px}
+.ps{font-size:11px;color:#888}
+/* COMPANY TABS */
+.ctabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.ctab{padding:7px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:500;transition:.15s}
+.ctab.active{background:#1d2433;color:#fff;border-color:#1d2433}
+.cinfo{font-size:11px;color:#666;padding:8px 10px;background:#f5f5f7;border-radius:6px;margin-bottom:8px}
+/* UPLOAD */
+.upload-zone{display:block;border:2px dashed #ddd;border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:#fafafa;margin-bottom:8px}
+.upload-zone:hover{border-color:#378ADD;background:#f0f7ff}
+/* OVERLAY / TOAST */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:12px}
+.ov.show{display:flex}
+.spinner{width:36px;height:36px;border:4px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ov p{color:#fff;font-size:14px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:2000;display:none}
+.toast.err{background:#dc2626}
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:500;padding:16px}
+.modal.show{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
+.canvas-wrap{border:2px solid #ddd;border-radius:10px;overflow:hidden;background:#fff}
+canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+/* DOCS */
+.empty{color:#aaa;text-align:center;padding:24px;font-size:13px}
+.badge-signed{background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-pending{background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-draft{background:#f3f4f6;color:#6b7280;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+/* PODPIS TAB */
+.podpis-sig-box{position:absolute;border:2px solid #378ADD;background:rgba(55,138,221,.15);cursor:move;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#378ADD;font-weight:700;resize:both;overflow:auto}
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="/static/logo.png" alt="logo">
+  Generátor zmlúv
+</div>
+
+<div class="wrap">
+<!-- TABS -->
+<div class="ztabs">
+  <button class="ztab active" id="zt-kup" onclick="setZTyp('kup')">📄 Zmluva o sprostredkovaní</button>
+  <button class="ztab" id="zt-bez" onclick="setZTyp('bez')">💸 Bezúčelová pôžička</button>
+  <button class="ztab" id="zt-docs" onclick="setZTyp('docs')">🗂 Dokumenty</button>
+  <button class="ztab" id="zt-podpis" onclick="setZTyp('podpis')">✍️ Podpis dokumentu</button>
+</div>
+
+<!-- ===== ZMLUVA O SPROSTREDKOVANI ===== -->
+<div id="sekcia-kup">
+<div class="row">
+  <!-- PREDAVAJUCI -->
+  <div class="card">
+    <div class="ch ch-blue">👤 Predávajúci</div>
+    <div class="cb">
+      <div class="sec">Nahrať doklady</div>
+      <label for="ip" class="upload-zone">＋ Pridať doklady (foto OP / PDF)</label>
+      <input type="file" id="ip" accept="image/*,application/pdf" multiple style="display:none" onchange="addF(this,'p')">
+      <div id="tp" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <button class="btn btn-blue" id="ai-p" onclick="aiF('p')" disabled style="width:100%">✨ Načítať z dokladov</button>
+
+      <div class="sec">Uložení predávajúci <span id="cp" style="background:#e0e0e0;padding:1px 6px;border-radius:99px;font-size:11px">0</span></div>
+      <div id="lp"></div>
+
+      <div class="sec">Údaje</div>
+      <input class="inp" id="pm" placeholder="Meno a priezvisko *">
+      <div class="row2" style="margin-top:6px">
+        <input class="inp" id="pd" placeholder="Dátum narodenia">
+        <input class="inp" id="po" placeholder="Číslo OP">
+      </div>
+      <input class="inp" id="pa" placeholder="Adresa (ulica, PSČ, obec)" style="margin-top:6px">
+      <input class="inp" id="pf" placeholder="Firma (ak predáva s.r.o.)" style="margin-top:6px">
+      <div class="row2" style="margin-top:6px">
+        <input class="inp" id="pi" placeholder="IČO firmy">
+        <input class="inp" id="pdc" placeholder="DIČ firmy">
+      </div>
+      <input class="inp" id="pfs" placeholder="Sídlo firmy" style="margin-top:6px">
+      <input class="inp" id="iban" placeholder="IBAN predávajúceho *" style="margin-top:6px">
+      <button class="btn btn-green" onclick="saveP('p')" style="width:100%;margin-top:8px">💾 Uložiť predávajúceho</button>
+    </div>
+  </div>
+
+  <!-- KUPUJUCI -->
+  <div class="card">
+    <div class="ch ch-blue">👥 Kupujúci</div>
+    <div class="cb">
+      <div class="sec">Nahrať doklady</div>
+      <label for="ik" class="upload-zone">＋ Pridať doklady</label>
+      <input type="file" id="ik" accept="image/*,application/pdf" multiple style="display:none" onchange="addF(this,'k')">
+      <div id="tk" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <button class="btn btn-blue" id="ai-k" onclick="aiF('k')" disabled style="width:100%">✨ Načítať z dokladov</button>
+
+      <div class="sec">Uložení kupujúci <span id="ck" style="background:#e0e0e0;padding:1px 6px;border-radius:99px;font-size:11px">0</span></div>
+      <div id="lk"></div>
+
+      <div class="sec">Údaje</div>
+      <input class="inp" id="km" placeholder="Meno a priezvisko *">
+      <div class="row2" style="margin-top:6px">
+        <input class="inp" id="kd" placeholder="Dátum narodenia">
+        <input class="inp" id="ko" placeholder="Číslo OP">
+      </div>
+      <input class="inp" id="ka" placeholder="Adresa (ulica, PSČ, obec)" style="margin-top:6px">
+      <input class="inp" id="kf" placeholder="Firma (ak kupuje s.r.o.)" style="margin-top:6px">
+      <div class="row2" style="margin-top:6px">
+        <input class="inp" id="ki" placeholder="IČO firmy">
+        <input class="inp" id="kdc" placeholder="DIČ firmy">
+      </div>
+      <input class="inp" id="kfs" placeholder="Sídlo firmy" style="margin-top:6px">
+      <button class="btn btn-green" onclick="saveP('k')" style="width:100%;margin-top:8px">💾 Uložiť kupujúceho</button>
+    </div>
+  </div>
+</div>
+
+<div class="card-full">
+  <div class="ch ch-dark">🚗 Vozidlo, financovanie a zmluva</div>
+  <div class="cb">
+    <div class="sec">Sprostredkovateľ</div>
+    <div class="ctabs" id="ctabs"></div>
+    <div class="cinfo" id="cinfo"></div>
+
+    <div class="row3">
+      <div><div class="sec">Vozidlo *</div><input class="inp" id="voz" placeholder="Značka Model"></div>
+      <div><div class="sec">VIN *</div><input class="inp" id="vin" placeholder="VIN kód"></div>
+      <div><div class="sec">Kúpna cena (EUR) *</div><input class="inp" id="kc" placeholder="0" oninput="calcFin()"></div>
+    </div>
+    <div class="row3" style="margin-top:8px">
+      <div><div class="sec">Akontácia (EUR)</div><input class="inp" id="ak" placeholder="0" oninput="calcFin()"></div>
+      <div><div class="sec">Financovaná čiastka</div><input class="inp" id="fc" placeholder="0" style="background:#f0f0f0" readonly></div>
+      <div></div>
+    </div>
+    <div class="row2" style="margin-top:8px">
+      <div><div class="sec">Miesto podpisu</div><input class="inp" id="mp" value="Nitra"></div>
+      <div><div class="sec">Dátum podpisu</div><input class="inp" id="dp" placeholder="DD.MM.RRRR"></div>
+    </div>
+    <button class="btn btn-save" onclick="saveDraft('kup')">💾 Uložiť koncept</button>
+    <button class="btn-dark" onclick="gen()">📄 Generovať PDF zmluvu</button>
+    <button class="btn-dark" style="background:#6b2fa0;margin-top:6px" onclick="createSignLink('kup')">🔗 Vytvoriť odkaz na podpis</button>
+    <button class="btn-dark" style="background:#1D9E75;margin-top:6px" onclick="signOnSite('kup')">✍️ Podpísať na mieste</button>
+  </div>
+</div>
+</div><!-- sekcia-kup -->
+
+<!-- ===== BEZUCELOVA POZICKA ===== -->
+<div id="sekcia-bez" style="display:none">
+<div class="card-full">
+  <div class="ch ch-dark">💸 Bezúčelová pôžička</div>
+  <div class="cb">
+    <div class="row">
+      <div>
+        <div class="sec">Nahrať doklady</div>
+        <label for="ib" class="upload-zone">＋ Pridať doklady</label>
+        <input type="file" id="ib" accept="image/*,application/pdf" multiple style="display:none" onchange="addF(this,'b')">
+        <div id="tb" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <button class="btn btn-blue" id="ai-b" onclick="aiF('b')" disabled style="width:100%">✨ Načítať z dokladov</button>
+
+        <div class="sec">Uložení dlžníci <span id="cb2" style="background:#e0e0e0;padding:1px 6px;border-radius:99px;font-size:11px">0</span></div>
+        <div id="lb"></div>
+
+        <div class="sec">Údaje dlžníka</div>
+        <input class="inp" id="bm" placeholder="Meno a priezvisko *">
+        <div class="row2" style="margin-top:6px">
+          <input class="inp" id="bd" placeholder="Dátum narodenia">
+          <input class="inp" id="bo" placeholder="Číslo OP">
+        </div>
+        <input class="inp" id="ba2" placeholder="Adresa" style="margin-top:6px">
+        <input class="inp" id="biban" placeholder="IBAN dlžníka" style="margin-top:6px">
+        <input class="inp" id="bf2" placeholder="Firma (ak je s.r.o.)" style="margin-top:6px">
+        <div class="row2" style="margin-top:6px">
+          <input class="inp" id="bi" placeholder="IČO">
+          <input class="inp" id="bdc" placeholder="DIČ">
+        </div>
+        <input class="inp" id="bfs" placeholder="Sídlo firmy" style="margin-top:6px">
+        <button class="btn btn-green" onclick="saveP('b')" style="width:100%;margin-top:8px">💾 Uložiť dlžníka</button>
+      </div>
+      <div>
+        <div class="sec">Sprostredkovateľ</div>
+        <div class="ctabs" id="ctabs-b"></div>
+        <div class="cinfo" id="cinfo-b"></div>
+
+        <div class="sec">Vozidlo (voliteľné)</div>
+        <input class="inp" id="bvoz" placeholder="Značka Model">
+        <input class="inp" id="bvin" placeholder="VIN" style="margin-top:6px">
+
+        <div class="sec">Suma pôžičky (EUR) *</div>
+        <input class="inp" id="bsuma" placeholder="0">
+
+        <div class="row2" style="margin-top:8px">
+          <div><div class="sec">Miesto podpisu</div><input class="inp" id="bmp" value="Nitra"></div>
+          <div><div class="sec">Dátum podpisu</div><input class="inp" id="bdp" placeholder="DD.MM.RRRR"></div>
+        </div>
+        <button class="btn btn-save" onclick="saveDraft('bez')" style="margin-top:10px">💾 Uložiť koncept</button>
+        <button class="btn-dark" onclick="genBez()">📄 Generovať bezúčelovú pôžičku</button>
+        <button class="btn-dark" style="background:#6b2fa0;margin-top:6px" onclick="createSignLink('bez')">🔗 Vytvoriť odkaz na podpis</button>
+        <button class="btn-dark" style="background:#1D9E75;margin-top:6px" onclick="signOnSite('bez')">✍️ Podpísať na mieste</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- sekcia-bez -->
+
+<!-- ===== DOKUMENTY ===== -->
+<div id="sekcia-docs" style="display:none">
+<div class="card-full">
+  <div class="ch ch-dark" style="display:flex;justify-content:space-between;align-items:center">
+    <span>🗂 Uložené dokumenty</span>
+    <button onclick="loadDocs(true)" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">↻ Obnoviť</button>
+  </div>
+  <div class="cb"><div id="docs-list"><div class="empty">Načítavam...</div></div></div>
+</div>
+</div><!-- sekcia-docs -->
+
+<!-- ===== PODPIS DOKUMENTU ===== -->
+<div id="sekcia-podpis" style="display:none">
+<div class="card-full">
+  <div class="ch ch-dark">📤 Nahrať dokument na podpis</div>
+  <div class="cb">
+    <label for="podpis-file" class="upload-zone" style="display:block">
+      <div style="font-size:36px">📄</div>
+      <p style="color:#888;font-size:13px;margin-top:6px"><strong>Klikni alebo presuň PDF sem</strong><br>Automaticky nájdeme miesto podpisu</p>
+    </label>
+    <input type="file" id="podpis-file" accept="application/pdf,.pdf" style="display:none" onchange="handlePodpisFile(this.files[0])">
+  </div>
+</div>
+
+<div class="card-full" id="podpis-preview-card" style="display:none">
+  <div class="ch ch-dark" id="podpis-preview-title">Náhľad</div>
+  <div class="cb">
+    <p style="font-size:12px;color:#888;margin-bottom:8px">Modrý rámček = miesto podpisu. Môžeš ho potiahnuť alebo zmeniť veľkosť.</p>
+    <div style="border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;position:relative" id="podpis-preview-wrap">
+      <img id="podpis-preview-img" src="" style="width:100%;display:block">
+      <div id="podpis-sig-box" class="podpis-sig-box">PODPIS</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn btn-blue" onclick="confirmPodpisPosition()">✓ Potvrdiť a vytvoriť odkaz</button>
+      <button class="btn btn-green" onclick="signPodpisNow()">✍️ Podpísať teraz</button>
+    </div>
+    <div id="podpis-link-result" style="display:none;margin-top:10px">
+      <div style="display:flex;gap:8px">
+        <input type="text" id="podpis-sign-link" readonly class="inp" style="flex:1">
+        <button class="btn btn-blue" onclick="copyPodpisLink()">🔗</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card-full">
+  <div class="ch ch-dark" style="display:flex;justify-content:space-between;align-items:center">
+    <span>📁 Dokumenty na podpis</span>
+    <button onclick="loadPodpisDocs(true)" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">↻ Obnoviť</button>
+  </div>
+  <div class="cb"><div id="podpis-docs-list"><div class="empty">Načítavam...</div></div></div>
+</div>
+</div><!-- sekcia-podpis -->
+</div><!-- wrap -->
+
+<!-- OVERLAY -->
+<div class="ov" id="ov"><div class="spinner"></div><p id="om"></p></div>
+<div class="toast" id="toast"></div>
+
+<!-- ONSITE MODAL -->
+<div class="modal" id="onsite-modal">
+  <div class="modal-box">
+    <h2 style="font-size:15px;margin-bottom:4px" id="onsite-title">Podpis na mieste</h2>
+    <p style="font-size:12px;color:#888;margin-bottom:12px" id="onsite-subtitle"></p>
+    <div class="canvas-wrap">
+      <canvas id="onsite-canvas"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" onclick="onsiteClear()" style="flex:1">🗑 Vymazať</button>
+      <button class="btn btn-green" onclick="onsiteNext()" style="flex:2">✓ Potvrdiť podpis</button>
+    </div>
+    <button class="btn" onclick="closeOnsiteModal()" style="width:100%;margin-top:6px">Zrušiť</button>
+  </div>
+</div>
+
+<!-- SIGN LINKS MODAL -->
+<div class="modal" id="sign-links-modal">
+  <div class="modal-box" style="max-width:520px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="font-size:16px">✍️ Podpisové odkazy</h2>
+      <button onclick="document.getElementById('sign-links-modal').classList.remove('show')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#666">×</button>
+    </div>
+    <p style="font-size:12px;color:#888;margin-bottom:14px">Každá strana podpisuje cez vlastný odkaz, alebo môžeš podpísať na mieste priamo tu.</p>
+    <div id="sign-links-body"></div>
+    <button class="btn" onclick="document.getElementById('sign-links-modal').classList.remove('show')" style="width:100%;margin-top:8px">Zatvoriť</button>
+  </div>
+</div>
+
+<!-- DONE MODAL -->
+<div class="modal" id="done-modal">
+  <div class="modal-box" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">✅</div>
+    <h2 style="margin-bottom:8px">Všetci podpísali!</h2>
+    <p style="color:#666;font-size:13px;margin-bottom:16px">Podpísané PDF je pripravené.</p>
+    <button class="btn btn-green" onclick="downloadDonePDF()" style="width:100%">⬇️ Stiahnuť podpísané PDF</button>
+    <button class="btn" onclick="document.getElementById('done-modal').classList.remove('show')" style="width:100%;margin-top:8px">Zavrieť</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const COS = {
+  stability:   {n:"stability s. r. o.",   s:"Nábrežie mládeže 569/81, 949 12 Nitra",i:"53392663",d:"2121373353"},
+  autazababku: {n:"autazababku s. r. o.", s:"Nábrežie mládeže 569/81, 949 01 Nitra",i:"57364508",d:"2122716079"},
+  finlife:     {n:"Finlife s. r. o.",     s:"Nábrežie mládeže 569/81, 949 01 Nitra",i:"56332441",d:"2122276574"},
+};
+
+let sc = "stability";
+let ztyp = "kup";
+let pers = {p:[],k:[],b:[]};
+let si   = {p:-1,k:-1,b:-1};
+let fs   = {p:[],k:[],b:[]};
+
+// ── HELPERS ────────────────────────────────────────────────────────────────────
+function gv(id){ return (document.getElementById(id)||{value:""}).value.trim(); }
+function sv(id,v){ const el=document.getElementById(id); if(el&&v!==undefined) el.value=v||""; }
+function ov(show,m=""){ document.getElementById("ov").classList.toggle("show",show); document.getElementById("om").textContent=m; }
+function toast(m,err=false){
+  const t=document.getElementById("toast");
+  t.textContent=m; t.className="toast"+(err?" err":""); t.style.display="block";
+  setTimeout(()=>t.style.display="none",3000);
+}
+function todayStr(){
+  const d=new Date();
+  return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();
+}
+function calcFin(){
+  const kc=parseFloat(gv("kc"))||0;
+  const ak=parseFloat(gv("ak"))||0;
+  sv("fc",kc-ak>0?String(kc-ak):"0");
+}
+
+// ── TABS ────────────────────────────────────────────────────────────────────────
+function setZTyp(t){
+  ztyp=t;
+  ["kup","bez","docs","podpis"].forEach(x=>{
+    document.getElementById("sekcia-"+x).style.display=t===x?"":"none";
+    document.getElementById("zt-"+x).classList.toggle("active",t===x);
+  });
+  if(t==="docs") loadDocs();
+  if(t==="podpis") loadPodpisDocs();
+  renderC();
+}
+
+// ── COMPANY SELECT ──────────────────────────────────────────────────────────────
+function selC(id){
+  sc=id;
+  document.querySelectorAll(".ctab").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".ctab[data-id='"+id+"']").forEach(b=>b.classList.add("active"));
+  const c=COS[id];
+  document.querySelectorAll(".cinfo").forEach(el=>el.textContent=`${c.n} | IČO: ${c.i} | DIČ: ${c.d} | ${c.s}`);
+}
+
+function renderC(){
+  ["","- b"].forEach((suf,idx)=>{
+    const tid=idx===0?"ctabs":"ctabs-b";
+    const el=document.getElementById(tid);
+    if(!el)return;
+    el.innerHTML=Object.entries(COS).map(([id,c])=>
+      `<button class="ctab${sc===id?" active":""}" data-id="${id}" onclick="selC('${id}')">${c.n}</button>`
+    ).join("");
+  });
+  selC(sc);
+}
+
+// ── PERSONS ─────────────────────────────────────────────────────────────────────
+async function loadP(){
+  try{
+    const r=await fetch("/api/persons");
+    const d=await r.json();
+    pers.p=d.pred||[]; pers.k=d.kup||[]; pers.b=d.dlz||[];
+    renderP("p"); renderP("k"); renderP("b");
+  }catch(e){ console.error("loadP error",e); }
+}
+
+function renderP(g){
+  const cid=g==="b"?"cb2":"c"+g;
+  const lid=g==="b"?"lb":"l"+g;
+  const cel=document.getElementById(cid);
+  const lel=document.getElementById(lid);
+  if(cel) cel.textContent=pers[g].length;
+  if(!lel)return;
+  lel.innerHTML=pers[g].map((p,i)=>`
+    <div class="pc${si[g]===i?g==="p"?" app":g==="k"?" akp":" adlz":""}" onclick="selP('${g}',${i})">
+      <div><div class="pn">${p.meno||p.firma||"?"}</div><div class="ps">OP: ${p.op||"—"}</div></div>
+      <button style="background:none;border:none;cursor:pointer;color:#E24B4A;font-size:13px"
+        onclick="delP('${g}','${p.id||p.meno}',event)">🗑</button>
+    </div>`).join("");
+}
+
+function selP(g,i){
+  si[g]=i;
+  const p=pers[g][i];
+  if(g==="p"){
+    sv("pm",p.meno); sv("pd",p.datum); sv("pa",p.adresa); sv("po",p.op);
+    sv("pf",p.firma); sv("pi",p.ico); sv("pdc",p.dic); sv("pfs",p.firma_sidlo);
+    sv("iban",p.iban);
+  } else if(g==="k"){
+    sv("km",p.meno); sv("kd",p.datum); sv("ka",p.adresa); sv("ko",p.op);
+    sv("kf",p.firma); sv("ki",p.ico); sv("kdc",p.dic); sv("kfs",p.firma_sidlo);
+  } else {
+    sv("bm",p.meno); sv("bd",p.datum); sv("ba2",p.adresa); sv("bo",p.op);
+    sv("biban",p.iban); sv("bf2",p.firma); sv("bi",p.ico); sv("bdc",p.dic); sv("bfs",p.firma_sidlo);
+  }
+  renderP(g);
+}
+
+async function saveP(g){
+  const p = g==="p" ? {meno:gv("pm"),datum:gv("pd"),adresa:gv("pa"),op:gv("po"),firma:gv("pf"),ico:gv("pi"),dic:gv("pdc"),firma_sidlo:gv("pfs"),iban:gv("iban")}
+           : g==="k" ? {meno:gv("km"),datum:gv("kd"),adresa:gv("ka"),op:gv("ko"),firma:gv("kf"),ico:gv("ki"),dic:gv("kdc"),firma_sidlo:gv("kfs")}
+           :            {meno:gv("bm"),datum:gv("bd"),adresa:gv("ba2"),op:gv("bo"),iban:gv("biban"),firma:gv("bf2"),ico:gv("bi"),dic:gv("bdc"),firma_sidlo:gv("bfs")};
+  if(!p.meno){toast("Zadaj meno",true);return;}
+  const existing=si[g]>=0 ? pers[g][si[g]] : null;
+  if(existing) p.id=existing.id;
+  ov(true,"Ukladám...");
+  try{
+    await fetch(`/api/persons/${g}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});
+    await loadP();
+    ov(false); toast("Uložené!");
+  }catch(e){ov(false);toast("Chyba uloženia",true);}
+}
+
+async function delP(g,id,e){
+  e.stopPropagation();
+  if(!confirm("Zmazať kontakt?"))return;
+  await fetch(`/api/persons/${g}/${id}`,{method:"DELETE"});
+  await loadP();
+  toast("Kontakt zmazaný");
+}
+
+// ── FILE UPLOAD & AI ──────────────────────────────────────────────────────────
+function addF(input,g){
+  const files=Array.from(input.files);
+  files.forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      fs[g].push({name:f.name,type:f.type,data:e.target.result});
+      renderT(g);
+      const btn=document.getElementById("ai-"+g);
+      if(btn)btn.disabled=false;
+    };
+    reader.readAsDataURL(f);
+  });
+  input.value="";
+}
+
+function renderT(g){
+  const el=document.getElementById(g==="b"?"tb":"t"+g);
+  if(!el)return;
+  el.innerHTML=fs[g].map((f,i)=>
+    f.type.startsWith("image/")
+      ? `<div style="position:relative"><img src="${f.data}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #ddd">
+           <button onclick="remF('${g}',${i})" style="position:absolute;top:-4px;right:-4px;background:#E24B4A;color:#fff;border:none;border-radius:99px;width:18px;height:18px;font-size:10px;cursor:pointer">×</button></div>`
+      : `<div style="position:relative;background:#f0f0f0;border-radius:6px;padding:4px 8px;font-size:10px;max-width:80px;overflow:hidden">${f.name.substring(0,12)}
+           <button onclick="remF('${g}',${i})" style="position:absolute;top:-4px;right:-4px;background:#E24B4A;color:#fff;border:none;border-radius:99px;width:18px;height:18px;font-size:10px;cursor:pointer">×</button></div>`
+  ).join("");
+}
+
+function remF(g,i){
+  fs[g].splice(i,1);
+  renderT(g);
+  const btn=document.getElementById("ai-"+g);
+  if(btn)btn.disabled=fs[g].length===0;
+}
+
+async function aiF(g){
+  if(!fs[g].length)return;
+  ov(true,"AI číta doklady...");
+  try{
+    const fd=new FormData();
+    fs[g].forEach((f,i)=>{
+      const blob=dataURLtoBlob(f.data);
+      fd.append("files",blob,f.name);
+    });
+    const r=await fetch("/api/extract",{method:"POST",body:fd});
+    const d=await r.json();
+    if(g==="p"){ sv("pm",d.meno);sv("pd",d.datum);sv("pa",d.adresa);sv("po",d.op);if(d.iban)sv("iban",d.iban); }
+    else if(g==="k"){ sv("km",d.meno);sv("kd",d.datum);sv("ka",d.adresa);sv("ko",d.op); }
+    else { sv("bm",d.meno);sv("bd",d.datum);sv("ba2",d.adresa);sv("bo",d.op);if(d.iban)sv("biban",d.iban); }
+    ov(false); toast("Doklady načítané!");
+  }catch(e){ov(false);toast("Chyba čítania",true);}
+}
+
+function dataURLtoBlob(dataURL){
+  const [head,data]=dataURL.split(",");
+  const mime=head.match(/:(.*?);/)[1];
+  const bin=atob(data);
+  const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+
+// ── COLLECT DATA ──────────────────────────────────────────────────────────────
+function collectData(typ){
+  const c=COS[sc];
+  if(typ==="kup") return {
+    ztyp:"kup",company_id:sc,company_name:c.n,company_sidlo:c.s,company_ico:c.i,company_dic:c.d,
+    predavajuci_meno:gv("pm"),predavajuci_datum:gv("pd"),predavajuci_adresa:gv("pa"),predavajuci_op:gv("po"),
+    predavajuci_firma:gv("pf"),predavajuci_ico:gv("pi"),predavajuci_dic:gv("pdc"),predavajuci_firma_sidlo:gv("pfs"),
+    kupujuci_meno:gv("km"),kupujuci_datum:gv("kd"),kupujuci_adresa:gv("ka"),kupujuci_op:gv("ko"),
+    kupujuci_firma:gv("kf"),kupujuci_ico:gv("ki"),kupujuci_dic:gv("kdc"),kupujuci_firma_sidlo:gv("kfs"),
+    vozidlo:gv("voz"),vin:gv("vin"),kupna_cena:gv("kc"),akontacia:gv("ak"),financovana:gv("fc"),
+    iban:gv("iban"),miesto:gv("mp"),datum:gv("dp")
+  };
+  return {
+    ztyp:"bez",company_id:sc,company_name:c.n,company_sidlo:c.s,company_ico:c.i,company_dic:c.d,
+    dlznik_meno:gv("bm"),dlznik_datum:gv("bd"),dlznik_adresa:gv("ba2"),dlznik_op:gv("bo"),
+    dlznik_firma:gv("bf2"),dlznik_ico:gv("bi"),dlznik_dic:gv("bdc"),dlznik_firma_sidlo:gv("bfs"),
+    dlznik_iban:gv("biban"),vozidlo:gv("bvoz"),vin:gv("bvin"),suma:gv("bsuma"),
+    miesto:gv("bmp"),datum:gv("bdp")
+  };
+}
+
+function fillData(typ,d){
+  if(typ==="kup"){
+    sv("pm",d.predavajuci_meno);sv("pd",d.predavajuci_datum);sv("pa",d.predavajuci_adresa);sv("po",d.predavajuci_op);
+    sv("pf",d.predavajuci_firma);sv("pi",d.predavajuci_ico);sv("pdc",d.predavajuci_dic);sv("pfs",d.predavajuci_firma_sidlo);
+    sv("km",d.kupujuci_meno);sv("kd",d.kupujuci_datum);sv("ka",d.kupujuci_adresa);sv("ko",d.kupujuci_op);
+    sv("kf",d.kupujuci_firma);sv("ki",d.kupujuci_ico);sv("kdc",d.kupujuci_dic);sv("kfs",d.kupujuci_firma_sidlo);
+    sv("voz",d.vozidlo);sv("vin",d.vin);sv("kc",d.kupna_cena);sv("ak",d.akontacia);sv("fc",d.financovana);
+    sv("iban",d.iban);sv("mp",d.miesto);sv("dp",d.datum);
+    if(d.company_id) selC(d.company_id);
+    setZTyp("kup");
+  } else {
+    sv("bm",d.dlznik_meno);sv("bd",d.dlznik_datum);sv("ba2",d.dlznik_adresa);sv("bo",d.dlznik_op);
+    sv("biban",d.dlznik_iban);sv("bf2",d.dlznik_firma);sv("bi",d.dlznik_ico);sv("bdc",d.dlznik_dic);sv("bfs",d.dlznik_firma_sidlo);
+    sv("bvoz",d.vozidlo);sv("bvin",d.vin);sv("bsuma",d.suma);sv("bmp",d.miesto);sv("bdp",d.datum);
+    if(d.company_id) selC(d.company_id);
+    setZTyp("bez");
+  }
+}
+
+// ── GENERATE PDF ──────────────────────────────────────────────────────────────
+async function gen(){
+  if(!gv("pm")||!gv("km")||!gv("voz")||!gv("kc")){toast("Vyplň povinné polia (*)!",true);return;}
+  ov(true,"Generujem PDF...");
+  try{
+    const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(collectData("kup"))});
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download="zmluva.pdf"; a.click();
+    ov(false);
+  }catch(e){ov(false);toast("Chyba generovania",true);}
+}
+
+async function genBez(){
+  if(!gv("bm")||!gv("bsuma")){toast("Vyplň povinné polia (*)!",true);return;}
+  ov(true,"Generujem PDF...");
+  try{
+    const r=await fetch("/api/generate/bezucelova",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(collectData("bez"))});
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download="bezucelova.pdf"; a.click();
+    ov(false);
+  }catch(e){ov(false);toast("Chyba generovania",true);}
+}
+
+// ── SIGN LINK ─────────────────────────────────────────────────────────────────
+async function createSignLink(typ){
+  if(typ==="kup"&&(!gv("pm")||!gv("km")||!gv("voz")||!gv("kc"))){toast("Vyplň povinné polia!",true);return;}
+  if(typ==="bez"&&(!gv("bm")||!gv("bsuma"))){toast("Vyplň meno dlžníka a sumu!",true);return;}
+  ov(true,"Vytváram podpisové odkazy...");
+  try{
+    const r=await fetch("/api/sign/create",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ztyp:typ,data:collectData(typ)})});
+    const res=await r.json();
+    ov(false);
+    loadDocs(true);
+    showSignLinksModal(res.token, res.signers, res.links);
+  }catch(e){ov(false);toast("Chyba vytvorenia odkazu",true);}
+}
+
+// ── SIGN ON SITE ──────────────────────────────────────────────────────────────
+let onsiteSession = null;
+let onsiteSigners = [];
+let onsiteIdx    = 0;
+let onsiteCanvas, onsiteCtx;
+
+async function signOnSite(typ){
+  if(typ==="kup"&&(!gv("pm")||!gv("km")||!gv("voz")||!gv("kc"))){toast("Vyplň povinné polia!",true);return;}
+  if(typ==="bez"&&(!gv("bm")||!gv("bsuma"))){toast("Vyplň meno dlžníka a sumu!",true);return;}
+  ov(true,"Vytváram session...");
+  try{
+    const r=await fetch("/api/sign/create",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ztyp:typ,data:collectData(typ)})});
+    const res=await r.json();
+    ov(false);
+    onsiteSession=res.token;
+    onsiteSigners=res.signers;
+    onsiteIdx=0;
+    openOnsiteModal();
+  }catch(e){ov(false);toast("Chyba",true);}
+}
+
+function openOnsiteModal(){
+  if(onsiteIdx>=onsiteSigners.length){
+    document.getElementById("onsite-modal").classList.remove("show");
+    toast("Všetci podpísali! PDF sa generuje...");
+    loadDocs(true);
+    return;
+  }
+  const signer=onsiteSigners[onsiteIdx];
+  document.getElementById("onsite-title").textContent=`Podpis ${onsiteIdx+1}/${onsiteSigners.length}`;
+  document.getElementById("onsite-subtitle").textContent=`${signer.role}: ${signer.name}`;
+  document.getElementById("onsite-modal").classList.add("show");
+  requestAnimationFrame(()=>{
+    onsiteCanvas=document.getElementById("onsite-canvas");
+    const dpr=window.devicePixelRatio||1;
+    const w=onsiteCanvas.parentElement.offsetWidth-4;
+    onsiteCanvas.width=w*dpr;
+    onsiteCanvas.height=180*dpr;
+    onsiteCanvas.style.width=w+"px";
+    onsiteCanvas.style.height="180px";
+    onsiteCtx=onsiteCanvas.getContext("2d",{willReadFrequently:true});
+    onsiteCtx.scale(dpr,dpr);
+    onsiteCtx.strokeStyle="#1d1d1f";
+    onsiteCtx.lineWidth=2.5;
+    onsiteCtx.lineCap="round";
+    onsiteCtx.lineJoin="round";
+    onsiteClear();
+    setupOnsiteCanvas();
+  });
+}
+
+function setupOnsiteCanvas(){
+  const pos=e=>{
+    const r=onsiteCanvas.getBoundingClientRect();
+    const dpr=window.devicePixelRatio||1;
+    const sx=(onsiteCanvas.width/dpr)/r.width;
+    const sy=(onsiteCanvas.height/dpr)/r.height;
+    const cx=e.touches?e.touches[0].clientX:e.clientX;
+    const cy=e.touches?e.touches[0].clientY:e.clientY;
+    return{x:(cx-r.left)*sx,y:(cy-r.top)*sy};
+  };
+  let drawing=false;
+  onsiteCanvas.onmousedown=e=>{drawing=true;const p=pos(e);onsiteCtx.beginPath();onsiteCtx.moveTo(p.x,p.y);};
+  onsiteCanvas.onmousemove=e=>{if(!drawing)return;const p=pos(e);onsiteCtx.lineTo(p.x,p.y);onsiteCtx.stroke();};
+  onsiteCanvas.onmouseup=onsiteCanvas.onmouseleave=()=>drawing=false;
+  onsiteCanvas.addEventListener("touchstart",e=>{e.preventDefault();drawing=true;const p=pos(e);onsiteCtx.beginPath();onsiteCtx.moveTo(p.x,p.y);},{passive:false});
+  onsiteCanvas.addEventListener("touchmove",e=>{e.preventDefault();if(!drawing)return;const p=pos(e);onsiteCtx.lineTo(p.x,p.y);onsiteCtx.stroke();},{passive:false});
+  onsiteCanvas.addEventListener("touchend",()=>drawing=false);
+}
+
+function onsiteClear(){
+  if(!onsiteCtx)return;
+  const dpr=window.devicePixelRatio||1;
+  onsiteCtx.clearRect(0,0,onsiteCanvas.width/dpr,onsiteCanvas.height/dpr);
+  onsiteCtx.fillStyle="#fff";
+  onsiteCtx.fillRect(0,0,onsiteCanvas.width/dpr,onsiteCanvas.height/dpr);
+}
+
+function onsiteIsEmpty(){
+  if(!onsiteCtx)return true;
+  const data=onsiteCtx.getImageData(0,0,onsiteCanvas.width,onsiteCanvas.height).data;
+  for(let i=0;i<data.length;i+=4){if(data[i+3]>10&&!(data[i]===255&&data[i+1]===255&&data[i+2]===255))return false;}
+  return true;
+}
+
+async function onsiteNext(){
+  if(onsiteIsEmpty()){toast("Najprv sa podpíšte",true);return;}
+  const signer=onsiteSigners[onsiteIdx];
+  ov(true,"Ukladám podpis...");
+  try{
+    const signature=onsiteCanvas.toDataURL("image/png");
+    const r=await fetch(`/api/sign/${onsiteSession}/submit`,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({role:signer.role,signature})
+    });
+    const res=await r.json();
+    ov(false);
+    onsiteIdx++;
+    if(res.all_signed){
+      document.getElementById("onsite-modal").classList.remove("show");
+      document.getElementById("done-modal").classList.add("show");
+      loadDocs(true);
+    } else {
+      openOnsiteModal();
+    }
+  }catch(e){
+    ov(false);
+    toast("Chyba spojenia - skúste znova",true);
+  }
+}
+
+function closeOnsiteModal(){
+  document.getElementById("onsite-modal").classList.remove("show");
+}
+
+let _doneToken=null;
+function downloadDonePDF(){
+  if(onsiteSession) window.open(`/api/sign/${onsiteSession}/download`,"_blank");
+  document.getElementById("done-modal").classList.remove("show");
+}
+
+// ── DRAFTS ────────────────────────────────────────────────────────────────────
+let _draftTokens={};
+
+async function saveDraft(typ){
+  ov(true,"Ukladám koncept...");
+  try{
+    const r=await fetch("/api/drafts/save",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({token:_draftTokens[typ]||null,ztyp:typ,data:collectData(typ)})});
+    const res=await r.json();
+    _draftTokens[typ]=res.token;
+    ov(false); toast("Koncept uložený!");
+  }catch(e){ov(false);toast("Chyba uloženia",true);}
+}
+
+async function loadDraft(token){
+  ov(true,"Načítavam koncept...");
+  try{
+    const r=await fetch(`/api/drafts/${token}`);
+    const draft=await r.json();
+    ov(false);
+    const typ=draft.ztyp;
+    _draftTokens[typ]=token;
+    fillData(typ,draft.data);
+    toast("Koncept načítaný!");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }catch(e){ov(false);toast("Chyba načítania",true);}
+}
+
+async function deleteDraft(token){
+  if(!confirm("Zmazať tento koncept?"))return;
+  try{
+    await fetch(`/api/drafts/${token}`,{method:"DELETE"});
+    toast("Koncept zmazaný");
+    _cachedDocs=(_cachedDocs||[]).filter(d=>d.token!==token);
+    renderDocs(_cachedDocs);
+  }catch(e){toast("Chyba mazania",true);}
+}
+
+// ── DOCUMENTS ─────────────────────────────────────────────────────────────────
+let _cachedDocs=[];
+let _docsLastLoaded=0;
+let _selectedDocs=new Set();
+
+async function loadDocs(force=false){
+  if(!force&&_cachedDocs.length&&(Date.now()-_docsLastLoaded<10000)){renderDocs(_cachedDocs);return;}
+  document.getElementById("docs-list").innerHTML='<div class="empty">Načítavam...</div>';
+  try{
+    const r=await fetch("/api/sessions");
+    const docs=await r.json();
+    _cachedDocs=docs; _docsLastLoaded=Date.now();
+    renderDocs(docs);
+  }catch(e){document.getElementById("docs-list").innerHTML='<div class="empty">Chyba načítania</div>';}
+}
+
+function renderDocs(docs){
+  const el=document.getElementById("docs-list");
+  const allChecked=docs.length>0&&docs.every(d=>_selectedDocs.has(d.token));
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#666;cursor:pointer">
+      <input type="checkbox" ${allChecked?"checked":""} onchange="toggleSelectAll(this.checked)">
+      Vybrať všetko
+    </label>
+    <div id="bulk-bar" style="display:none;align-items:center;gap:8px">
+      <span id="bulk-count" style="font-size:12px;color:#666"></span>
+      <button onclick="deleteSelected()" style="padding:5px 12px;background:#E24B4A;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600">🗑 Zmazať vybrané</button>
+    </div>
+    ${docs.length?`<button onclick="deleteAllDocs()" style="padding:5px 12px;background:#fee2e2;color:#991b1b;border:none;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600">🗑 Zmazať všetko (${docs.length})</button>`:""}
+  </div>`;
+  if(!docs.length){el.innerHTML=html+'<div class="empty">Žiadne dokumenty</div>';updateBulkBar();return;}
+
+  html+=docs.map(d=>{
+    const allSigned=d.all_signed||(d.signers||[]).every(s=>s.signed);
+    const signedCount=(d.signers||[]).filter(s=>s.signed).length;
+    const total=(d.signers||[]).length;
+    const checked=_selectedDocs.has(d.token);
+    const badges=(d.signers||[]).map(s=>`
+      <span style="display:inline-flex;align-items:center;gap:3px;background:${s.signed?"#d1fae5":"#fef3c7"};color:${s.signed?"#065f46":"#92400e"};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">
+        ${s.signed?"✓":"○"} ${s.role}
+      </span>`).join("");
+    return `<div style="border:1px solid #e0e0e0;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:${allSigned?"#f0fdf8":"#fff"};display:flex;gap:10px">
+      <input type="checkbox" ${checked?"checked":""} onchange="toggleDocSelect('${d.token}',this.checked)" style="margin-top:3px;cursor:pointer;flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px">${d.label}</div>
+            <div style="font-size:11px;color:#aaa">${d.created||""} · ${d.ztyp==="bez"?"Bezúčelová pôžička":"Zmluva o sprostredkovaní"}</div>
+          </div>
+          <span class="${d.draft?"badge-draft":allSigned?"badge-signed":"badge-pending"}">
+            ${d.draft?"📝 Koncept":allSigned?"✅ Podpísaná":`${signedCount}/${total} podpisov`}
+          </span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${badges}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${d.draft?`
+            <button onclick="loadDraft('${d.token}')" class="btn btn-blue">✏️ Otvoriť a upraviť</button>
+            <button onclick="deleteDraft('${d.token}')" class="btn" style="color:#E24B4A">🗑 Zmazať</button>
+          `:`
+            ${allSigned?`
+              <button onclick="window.open('/api/sign/${d.token}/download','_blank')" class="btn btn-green">⬇️ Stiahnuť PDF</button>
+              <button onclick="copyPdfLink('${d.token}')" class="btn">🔗 Kopírovať link</button>
+            `:""}
+            <button onclick="showDocLinks('${d.token}')" class="btn">✍️ Podpisové odkazy</button>
+            <button onclick="deleteDoc('${d.token}')" class="btn" style="color:#E24B4A">🗑 Zmazať</button>
+          `}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+  el.innerHTML=html;
+  updateBulkBar();
+}
+
+function toggleDocSelect(token,checked){
+  if(checked)_selectedDocs.add(token); else _selectedDocs.delete(token);
+  updateBulkBar();
+}
+function toggleSelectAll(checked){
+  _selectedDocs.clear();
+  if(checked)_cachedDocs.forEach(d=>_selectedDocs.add(d.token));
+  renderDocs(_cachedDocs);
+}
+function updateBulkBar(){
+  const bar=document.getElementById("bulk-bar");
+  if(!bar)return;
+  const n=_selectedDocs.size;
+  bar.style.display=n>0?"flex":"none";
+  const cnt=document.getElementById("bulk-count");
+  if(cnt)cnt.textContent=`${n} vybraných`;
+}
+async function deleteSelected(){
+  if(!confirm(`Zmazať ${_selectedDocs.size} dokumentov?`))return;
+  ov(true,"Mažem...");
+  for(const token of _selectedDocs){
+    const d=_cachedDocs.find(x=>x.token===token);
+    try{ await fetch(d&&d.draft?`/api/drafts/${token}`:`/api/sessions/${token}`,{method:"DELETE"}); }catch(e){}
+  }
+  _cachedDocs=_cachedDocs.filter(d=>!_selectedDocs.has(d.token));
+  _selectedDocs.clear(); ov(false);
+  toast("Zmazané"); renderDocs(_cachedDocs);
+}
+async function deleteAllDocs(){
+  if(!confirm(`Zmazať všetkých ${_cachedDocs.length} dokumentov?`))return;
+  ov(true,"Mažem všetko...");
+  for(const d of [..._cachedDocs]){
+    try{ await fetch(d.draft?`/api/drafts/${d.token}`:`/api/sessions/${d.token}`,{method:"DELETE"}); }catch(e){}
+  }
+  _cachedDocs=[];_selectedDocs.clear();ov(false);
+  toast("Všetko zmazané");renderDocs(_cachedDocs);
+}
+async function deleteDoc(token){
+  if(!confirm("Zmazať tento dokument?"))return;
+  try{
+    const r=await fetch(`/api/sessions/${token}`,{method:"DELETE"});
+    if(r.ok){ toast("Dokument zmazaný");_cachedDocs=_cachedDocs.filter(d=>d.token!==token);renderDocs(_cachedDocs); }
+  }catch(e){toast("Chyba mazania",true);}
+}
+function copyPdfLink(token){
+  const url=`${location.origin}/api/sign/${token}/download`;
+  navigator.clipboard.writeText(url).then(()=>toast("Link skopírovaný!"))
+    .catch(()=>prompt("Skopíruj link:",url));
+}
+async function showDocLinks(token){
+  try{
+    const r=await fetch(`/api/sign/${token}`);
+    const s=await r.json();
+    const links={};
+    s.signers.forEach(sig=>{
+      const key=sig.role.toLowerCase().replace(/ /g,"_")
+        .replace(/á/g,"a").replace(/í/g,"i").replace(/é/g,"e").replace(/ú/g,"u")
+        .replace(/ľ/g,"l").replace(/š/g,"s").replace(/č/g,"c").replace(/ť/g,"t").replace(/ž/g,"z");
+      links[sig.role]=`/sign/${token}/${key}`;
+    });
+    showSignLinksModal(token, s.signers, links);
+  }catch(e){toast("Chyba",true);}
+}
+
+function showSignLinksModal(token, signers, links){
+  const modal=document.getElementById("sign-links-modal");
+  const body=document.getElementById("sign-links-body");
+  body.innerHTML=signers.map(s=>{
+    const url=location.origin+(links[s.role]||"");
+    return `<div style="border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:14px">${s.name}</div>
+          <div style="font-size:12px;color:#888">${s.role}</div>
+        </div>
+        <span style="padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;background:${s.signed?"#d1fae5":"#fef3c7"};color:${s.signed?"#065f46":"#92400e"}">${s.signed?"✅ Podpísané":"○ Čaká"}</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-blue" onclick="window.open('${url}','_blank')" style="flex:1">🔗 Otvoriť odkaz</button>
+        <button class="btn" onclick="navigator.clipboard.writeText('${url}').then(()=>toast('Link skopírovaný!'))" style="flex:1">📋 Kopírovať</button>
+      </div>
+      <input type="text" value="${url}" readonly class="inp" style="margin-top:8px;font-size:11px;color:#666">
+    </div>`;
+  }).join("");
+  modal.classList.add("show");
+}
+
+// ── PODPIS DOKUMENTU ─────────────────────────────────────────────────────────
+let _podpisToken=null,_podpisSigPos=null,_podpisPageInfo=null;
+let _cachedPodpisDocs=[],_podpisLastLoad=0;
+
+const _pz=document.getElementById("podpis-upload-zone");
+if(_pz){
+  _pz.addEventListener("dragover",e=>{e.preventDefault();_pz.style.borderColor="#378ADD";});
+  _pz.addEventListener("dragleave",()=>{_pz.style.borderColor="#ddd";});
+  _pz.addEventListener("drop",e=>{e.preventDefault();_pz.style.borderColor="#ddd";if(e.dataTransfer.files.length)handlePodpisFile(e.dataTransfer.files[0]);});
+}
+
+async function handlePodpisFile(file){
+  if(!file){toast("Vyber PDF súbor",true);return;}
+  // Safari sometimes reports wrong MIME type - check extension too
+  const isPDF = file.type==="application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  if(!isPDF){toast("Vyber PDF súbor",true);return;}
+  ov(true,"Analyzujem a hľadám miesto podpisu...");
+  const fd=new FormData();
+  // Safari fix: explicitly set filename with correct extension
+  fd.append("file", file, file.name.endsWith(".pdf") ? file.name : file.name+".pdf");
+  try{
+    const res = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/podpis/upload");
+      xhr.onload = () => {
+        if(xhr.status >= 200 && xhr.status < 300){
+          try{ resolve(JSON.parse(xhr.responseText)); }
+          catch(e){ reject(new Error("Neplatná odpoveď servera")); }
+        } else {
+          reject(new Error("Upload zlyhal: " + xhr.status + " " + xhr.responseText));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Chyba siete"));
+      xhr.send(fd);
+    });
+    _podpisToken=res.token; _podpisSigPos=res.sig_position; _podpisPageInfo=res;
+    ov(false);
+    await showPodpisPreview();
+    toast("Dokument nahraný!");
+    fetch(`/api/podpis/doc/${_podpisToken}/persist`,{method:"POST"});
+    loadPodpisDocs(true);
+  }catch(e){
+    ov(false);
+    toast("Chyba nahrávania: "+e.message, true);
+    console.error("Upload error:", e);
+  }
+}
+
+async function showPodpisPreview(){
+  document.getElementById("podpis-preview-card").style.display="block";
+  document.getElementById("podpis-link-result").style.display="none";
+  document.getElementById("podpis-preview-title").textContent=`Náhľad - strana ${_podpisSigPos.page+1} z ${_podpisPageInfo.page_count}`;
+  const img=document.getElementById("podpis-preview-img");
+  img.src=`/api/podpis/doc/${_podpisToken}/page/${_podpisSigPos.page}`;
+  await new Promise(res=>{img.onload=res;});
+  const wrap=document.getElementById("podpis-preview-wrap");
+  const scale=wrap.offsetWidth/_podpisSigPos.page_width;
+  const box=document.getElementById("podpis-sig-box");
+  box.style.left=(_podpisSigPos.x*scale)+"px";
+  box.style.top=(_podpisSigPos.y*scale)+"px";
+  box.style.width=(_podpisSigPos.width*scale)+"px";
+  box.style.height=(_podpisSigPos.height*scale)+"px";
+  makePodpisDraggable(box,wrap,scale);
+  document.getElementById("podpis-preview-card").scrollIntoView({behavior:"smooth"});
+}
+
+function makePodpisDraggable(box,wrap,scale){
+  let dragging=false,startX,startY,origX,origY;
+  box.onmousedown=e=>{if(e.target!==box)return;dragging=true;startX=e.clientX;startY=e.clientY;origX=box.offsetLeft;origY=box.offsetTop;e.preventDefault();};
+  document.addEventListener("mousemove",e=>{
+    if(!dragging)return;
+    let nx=origX+(e.clientX-startX),ny=origY+(e.clientY-startY);
+    nx=Math.max(0,Math.min(nx,wrap.offsetWidth-box.offsetWidth));
+    ny=Math.max(0,Math.min(ny,wrap.offsetHeight-box.offsetHeight));
+    box.style.left=nx+"px"; box.style.top=ny+"px";
+  });
+  document.addEventListener("mouseup",()=>{if(dragging){dragging=false;updatePodpisSigPos(box,wrap,scale);}});
+  new ResizeObserver(()=>updatePodpisSigPos(box,wrap,scale)).observe(box);
+}
+
+function updatePodpisSigPos(box,wrap,scale){
+  _podpisSigPos.x=box.offsetLeft/scale; _podpisSigPos.y=box.offsetTop/scale;
+  _podpisSigPos.width=box.offsetWidth/scale; _podpisSigPos.height=box.offsetHeight/scale;
+}
+
+async function confirmPodpisPosition(){
+  ov(true,"Ukladám...");
+  await fetch(`/api/podpis/doc/${_podpisToken}/position`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sig_position:_podpisSigPos})});
+  ov(false);
+  const link=`${location.origin}/podpis/sign/${_podpisToken}`;
+  document.getElementById("podpis-sign-link").value=link;
+  document.getElementById("podpis-link-result").style.display="block";
+  toast("Odkaz vytvorený!");
+}
+
+function copyPodpisLink(){
+  const inp=document.getElementById("podpis-sign-link");
+  navigator.clipboard.writeText(inp.value).then(()=>toast("Link skopírovaný!"));
+}
+
+async function signPodpisNow(){
+  await fetch(`/api/podpis/doc/${_podpisToken}/position`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sig_position:_podpisSigPos})});
+  location.href=`/podpis/sign/${_podpisToken}`;
+}
+
+async function loadPodpisDocs(force=false){
+  if(!force&&_cachedPodpisDocs.length&&(Date.now()-_podpisLastLoad<8000)){renderPodpisDocs(_cachedPodpisDocs);return;}
+  document.getElementById("podpis-docs-list").innerHTML='<div class="empty">Načítavam...</div>';
+  try{
+    const r=await fetch("/api/podpis/documents");
+    const docs=await r.json();
+    _cachedPodpisDocs=docs; _podpisLastLoad=Date.now();
+    renderPodpisDocs(docs);
+  }catch(e){document.getElementById("podpis-docs-list").innerHTML='<div class="empty">Chyba načítania</div>';}
+}
+
+function renderPodpisDocs(docs){
+  const el=document.getElementById("podpis-docs-list");
+  if(!docs.length){el.innerHTML='<div class="empty">Žiadne dokumenty</div>';return;}
+  el.innerHTML=docs.map(d=>`
+    <div style="border:1px solid #e0e0e0;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:${d.signed?"#f0fdf8":"#fff"};display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.filename}</div>
+        <div style="font-size:11px;color:#aaa">${d.created||""}</div>
+      </div>
+      <span class="${d.signed?"badge-signed":"badge-pending"}">${d.signed?"✅ Podpísané":"⏳ Čaká"}</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${d.signed?`<button class="btn btn-green" onclick="window.open('/api/podpis/doc/${d.token}/download','_blank')">⬇️ Stiahnuť</button>`
+          :`<button class="btn btn-blue" onclick="location.href='/podpis/sign/${d.token}'">✍️ Podpísať</button>`}
+        <button class="btn" onclick="copyPodpisDocLink('${d.token}')">🔗</button>
+        <button class="btn" style="color:#E24B4A" onclick="deletePodpisDoc('${d.token}')">🗑</button>
+      </div>
+    </div>`).join("");
+}
+
+function copyPodpisDocLink(token){
+  navigator.clipboard.writeText(`${location.origin}/podpis/sign/${token}`).then(()=>toast("Link skopírovaný!"));
+}
+async function deletePodpisDoc(token){
+  if(!confirm("Zmazať?"))return;
+  try{
+    const r=await fetch(`/api/podpis/doc/${token}`,{method:"DELETE"});
+    if(r.ok){toast("Zmazané");_cachedPodpisDocs=_cachedPodpisDocs.filter(d=>d.token!==token);renderPodpisDocs(_cachedPodpisDocs);}
+  }catch(e){toast("Chyba",true);}
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById("dp").value=todayStr();
+document.getElementById("bdp").value=todayStr();
+renderC();
+loadP();
+</script>
+</body>
+</html>

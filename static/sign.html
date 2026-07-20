@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Podpis zmluvy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:#f5f5f7;color:#1d1d1f}
+.header{background:#1d2433;color:#fff;padding:14px 20px;font-weight:700;font-size:16px}
+.wrap{max-width:680px;margin:0 auto;padding:16px}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.step{display:none}.step.active{display:block}
+.info-row{display:flex;gap:8px;margin-bottom:4px;font-size:13px}
+.info-row span:first-child{color:#888;min-width:90px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-signed{background:#d1fae5;color:#065f46}
+.badge-pending{background:#fef3c7;color:#92400e}
+.signer-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.signer-row:last-child{border-bottom:none}
+.signer-name{font-weight:600;font-size:14px}
+.signer-role{font-size:11px;color:#888}
+.canvas-wrap{border:2px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fff;position:relative}
+canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.btn{padding:12px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-top:8px}
+.btn-green{background:#1D9E75;color:#fff}
+.btn-gray{background:#f0f0f0;color:#333}
+.btn-blue{background:#378ADD;color:#fff}
+.done-wrap{text-align:center;padding:20px 0}
+.done-icon{font-size:56px;margin-bottom:12px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:12px}
+.overlay.show{display:flex}
+.spinner{width:36px;height:36px;border:4px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite}
+.overlay p{color:#fff;font-size:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1d1d1f;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:.3s}
+.toast.show{opacity:1}
+.toast.err{background:#dc2626}
+</style>
+</head>
+<body>
+<div class="header">✍️ Podpis zmluvy</div>
+<div class="wrap">
+
+  <!-- Loading -->
+  <div class="step active" id="step-loading">
+    <div class="card"><p style="text-align:center;color:#888;padding:20px">Načítavam...</p></div>
+  </div>
+
+  <!-- Overview + Sign -->
+  <div class="step" id="step-sign">
+    <div class="card" id="card-info">
+      <h2 style="font-size:15px;margin-bottom:14px">📄 Zmluva na podpis</h2>
+      <div id="doc-meta"></div>
+      <div style="margin-top:14px">
+        <div class="info-row"><span>Podpisujúci</span></div>
+        <div id="signers-list"></div>
+      </div>
+    </div>
+
+    <div class="card" id="card-canvas">
+      <h2 style="font-size:15px;margin-bottom:4px">Vlastnoručný podpis</h2>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Podpíšte sa prstom alebo myšou do poľa nižšie</p>
+      <div class="canvas-wrap">
+        <canvas id="sig-canvas"></canvas>
+      </div>
+      <button class="btn btn-gray" onclick="clearCanvas()" style="margin-top:10px">🗑 Vymazať</button>
+      <button class="btn btn-green" onclick="submitSig()">✓ Potvrdiť podpis</button>
+    </div>
+  </div>
+
+  <!-- Done partial (waiting for others) -->
+  <div class="step" id="step-partial">
+    <div class="card">
+      <div class="done-wrap">
+        <div class="done-icon">✍️</div>
+        <h2 style="margin-bottom:8px">Váš podpis bol uložený!</h2>
+        <p style="color:#666;font-size:14px;margin-bottom:16px">Čaká sa na podpisy ostatných strán.</p>
+        <div id="partial-dl" style="display:none;margin-bottom:12px">
+          <p style="color:#065f46;font-weight:700;margin-bottom:8px">✅ Všetci podpísali!</p>
+          <button class="btn btn-green" onclick="downloadSigned()">⬇️ Stiahnuť podpísaný PDF</button>
+        </div>
+        <button class="btn btn-gray" onclick="copyLink()">🔗 Kopírovať odkaz na podpis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All signed -->
+  <div class="step" id="step-done">
+    <div class="card">
+      <div class="done-wrap">
+        <div class="done-icon">✅</div>
+        <h2 style="margin-bottom:8px">Všetci podpísali!</h2>
+        <p style="color:#666;font-size:14px;margin-bottom:16px">Podpísané PDF je pripravené na stiahnutie.</p>
+        <button class="btn btn-green" onclick="downloadSigned()">⬇️ Stiahnuť podpísané PDF</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay"><div class="spinner"></div><p id="ov-msg">Spracúvam...</p></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const path = location.pathname.split("/");
+const token = path[path.length-1];
+const roleSlug = path.length >= 4 ? path[path.length-1] : null;
+const actualToken = path.length >= 4 ? path[path.length-2] : token;
+
+let sessionData = null;
+let myRole = null;
+let canvas, ctx, drawing = false;
+
+function ov(show, msg) {
+  document.getElementById("overlay").classList.toggle("show", show);
+  if(msg) document.getElementById("ov-msg").textContent = msg;
+}
+function toast(m, err) {
+  const t = document.getElementById("toast");
+  t.textContent = m;
+  t.className = "toast show" + (err ? " err" : "");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+function showStep(id) {
+  document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+async function init() {
+  try {
+    // Determine if we have a role-specific URL
+    const urlParts = location.pathname.split("/").filter(Boolean);
+    let apiUrl;
+    let _token, _roleSlug;
+    if (urlParts.length >= 3 && urlParts[0] === "sign") {
+      _token = urlParts[1];
+      _roleSlug = urlParts[2];
+      apiUrl = `/api/sign/${_token}/${_roleSlug}`;
+    } else if (urlParts.length >= 2 && urlParts[0] === "sign") {
+      _token = urlParts[1];
+      apiUrl = `/api/sign/${_token}`;
+    } else {
+      throw new Error("Neplatná URL");
+    }
+    window._token = _token;
+    window._roleSlug = _roleSlug;
+
+    const r = await fetch(apiUrl);
+    if (!r.ok) throw new Error("Dokument nenájdený");
+    sessionData = await r.json();
+    myRole = sessionData.my_role || null;
+
+    renderInfo();
+
+    // Check if all already signed
+    if (sessionData.signers.every(s => s.signed)) {
+      showStep("step-done");
+      return;
+    }
+
+    // Check if my role is already signed
+    if (myRole) {
+      const mySigner = sessionData.signers.find(s => s.role === myRole);
+      if (mySigner && mySigner.signed) {
+        showStep("step-partial");
+        checkAllSigned();
+        return;
+      }
+    }
+
+    showStep("step-sign");
+    requestAnimationFrame(setupCanvas);
+  } catch(e) {
+    document.querySelector("#step-loading .card p").textContent = "Chyba: " + e.message;
+  }
+}
+
+function renderInfo() {
+  const d = sessionData.data || {};
+  const ztyp = sessionData.ztyp;
+  let meta = "";
+  if (ztyp === "bez") {
+    meta = `<div class="info-row"><span>Dlžník</span><span>${d.dlznik_meno||""}</span></div>
+            <div class="info-row"><span>Suma</span><span>${d.suma||""} EUR</span></div>`;
+  } else {
+    meta = `<div class="info-row"><span>Predávajúci</span><span>${d.predavajuci_meno||""}</span></div>
+            <div class="info-row"><span>Kupujúci</span><span>${d.kupujuci_meno||""}</span></div>
+            <div class="info-row"><span>Vozidlo</span><span>${d.vozidlo||""}</span></div>
+            <div class="info-row"><span>Kúpna cena</span><span>${d.kupna_cena||""} EUR</span></div>`;
+  }
+  document.getElementById("doc-meta").innerHTML = meta;
+
+  const sl = sessionData.signers.map(s => `
+    <div class="signer-row">
+      <div>
+        <div class="signer-name">${s.name}${myRole===s.role?' <span style="color:#378ADD;font-size:11px">(vy)</span>':''}</div>
+        <div class="signer-role">${s.role}</div>
+      </div>
+      <span class="badge ${s.signed?'badge-signed':'badge-pending'}">${s.signed?'✓ Podpísané':'○ Čaká'}</span>
+    </div>`).join("");
+  document.getElementById("signers-list").innerHTML = sl;
+}
+
+function setupCanvas() {
+  canvas = document.getElementById("sig-canvas");
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.parentElement.offsetWidth - 4;
+  canvas.width  = w * dpr;
+  canvas.height = 180 * dpr;
+  canvas.style.width  = w + "px";
+  canvas.style.height = "180px";
+  ctx = canvas.getContext("2d", {willReadFrequently: true});
+  ctx.scale(dpr, dpr);
+  ctx.strokeStyle = "#1d1d1f";
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = "round";
+  ctx.lineJoin    = "round";
+  clearCanvas();
+
+  const pos = e => {
+    const r = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio||1;
+    const sx = (canvas.width/dpr)/r.width;
+    const sy = (canvas.height/dpr)/r.height;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return {x:(cx-r.left)*sx, y:(cy-r.top)*sy};
+  };
+  canvas.addEventListener("mousedown",  e => { drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+  canvas.addEventListener("mousemove",  e => { if(!drawing)return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+  canvas.addEventListener("mouseup",    () => drawing=false);
+  canvas.addEventListener("mouseleave", () => drawing=false);
+  canvas.addEventListener("touchstart", e => { e.preventDefault(); drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+  canvas.addEventListener("touchmove",  e => { e.preventDefault(); if(!drawing)return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+  canvas.addEventListener("touchend",   () => drawing=false);
+}
+
+function clearCanvas() {
+  if (!ctx) return;
+  const dpr = window.devicePixelRatio||1;
+  ctx.clearRect(0, 0, canvas.width/dpr, canvas.height/dpr);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, canvas.width/dpr, canvas.height/dpr);
+}
+
+function isEmpty() {
+  if (!ctx) return true;
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  for (let i=0; i<data.length; i+=4) {
+    if (data[i+3]>10 && !(data[i]===255&&data[i+1]===255&&data[i+2]===255)) return false;
+  }
+  return true;
+}
+
+async function submitSig() {
+  if (isEmpty()) { toast("Najprv sa podpíšte", true); return; }
+  if (!myRole) { toast("Chýba rola podpisujúceho", true); return; }
+  ov(true, "Ukladám podpis...");
+  try {
+    const signature = canvas.toDataURL("image/png");
+    const r = await fetch(`/api/sign/${window._token}/submit`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({role: myRole, signature})
+    });
+    const res = await r.json();
+    ov(false);
+    if (res.all_signed) {
+      showStep("step-done");
+    } else {
+      showStep("step-partial");
+      setTimeout(checkAllSigned, 4000);
+    }
+  } catch(e) {
+    ov(false);
+    toast("Chyba uloženia", true);
+  }
+}
+
+async function checkAllSigned() {
+  try {
+    const r = await fetch(`/api/sign/${window._token}`);
+    const s = await r.json();
+    if (s.signers.every(sig => sig.signed)) {
+      document.getElementById("partial-dl").style.display = "block";
+    } else {
+      setTimeout(checkAllSigned, 5000);
+    }
+  } catch(e) {}
+}
+
+function downloadSigned() {
+  window.open(`/api/sign/${window._token}/download`, "_blank");
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => toast("Odkaz skopírovaný!"));
+}
+
+init();
+</script>
+</body>
+</html>
