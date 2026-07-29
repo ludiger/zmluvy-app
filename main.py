@@ -337,25 +337,28 @@ async def download_signed(token: str):
     if not session:
         raise HTTPException(404,"Relácia nenájdená")
     signed_path = SESSIONS_DIR / f"{token}_signed.pdf"
+
     if not signed_path.exists():
+        from storage_helper import gh_load as _gh_load
         try:
-            from storage_helper import gh_load as _gh_load
-            # Try to restore signed PDF from GitHub storage
             signed_bytes = _gh_load(f"pdfs/{token}/signed.pdf")
             if signed_bytes:
                 signed_path.write_bytes(signed_bytes)
         except Exception as e:
             print(f"signed pdf restore error: {e}")
+
     if not signed_path.exists():
+        from storage_helper import gh_load as _gh_load
         try:
-            from storage_helper import gh_load as _gh_load
-            # Regenerate: load signatures from GitHub storage
             sig_images = {}
             for s in session.get("signers", []):
                 slug = _slug(s["role"])
                 sig_bytes_stored = _gh_load(f"sigs/{token}/{slug}.png")
                 if sig_bytes_stored:
                     sig_images[slug] = "data:image/png;base64," + base64.b64encode(sig_bytes_stored).decode()
+                    print(f"Loaded sig {slug}: {len(sig_bytes_stored)} bytes")
+            if not sig_images:
+                raise HTTPException(404, "Podpisy nenajdene")
             data = session["data"].copy()
             data["output_path"] = str(signed_path)
             data["logo_path"]   = LOGO_PATH
@@ -365,10 +368,15 @@ async def download_signed(token: str):
             else:
                 from pdf_generator import generate_pdf as gen
             gen(**data)
+            print(f"Regenerated PDF: {token[:8]}")
+        except HTTPException:
+            raise
         except Exception as e:
-            raise HTTPException(404, f"PDF nenájdený: {e}")
+            raise HTTPException(500, f"Chyba generovania: {e}")
+
     if not signed_path.exists():
-        raise HTTPException(404,"PDF nenájdený")
+        raise HTTPException(404,"PDF nenajdeny")
+
     d = session.get("data",{})
     if session.get("ztyp") == "bez":
         name = f"Bezucelova_{(d.get('dlznik_meno','') or '').split()[-1]}"
@@ -377,6 +385,7 @@ async def download_signed(token: str):
         k = (d.get("kupujuci_meno","") or "").split()
         name = f"Zmluva_{p[-1] if p else ''}_{k[-1] if k else ''}"
     return FileResponse(str(signed_path), media_type="application/pdf", filename=f"{name}_podpisana.pdf")
+
 
 @app.get("/api/sign/{token}")
 def get_sign_session(token: str):
