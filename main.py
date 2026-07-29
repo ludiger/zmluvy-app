@@ -298,17 +298,22 @@ async def submit_signature(token: str, request: Request):
     _r, _s, _all = role, sig, all_signed
     async def _bg():
         try:
-            files = {}
+            from storage_helper import gh_save as _gh_save
+            # Save signature to GitHub storage (not Gist - too large over time)
             if _s:
-                files[f"sig_{token}_{_slug(_r)}.b64"] = _s.split(",")[-1] if "," in _s else _s
+                sig_only = _s.split(",")[-1] if "," in _s else _s
+                sig_bytes = base64.b64decode(sig_only)
+                _gh_save(f"sigs/{token}/{_slug(_r)}.png", sig_bytes, "sig")
+            # Save session status to Gist (small JSON)
             gs = {k:v for k,v in session.items() if k!="signers"}
             gs["signers"] = [{"role":s["role"],"name":s["name"],"signed":s["signed"]} for s in session["signers"]]
-            files[f"session_{token}.json"] = json.dumps(gs, ensure_ascii=False, indent=2)
-            _gist_patch(files)
+            _gist_patch({f"session_{token}.json": json.dumps(gs, ensure_ascii=False, indent=2)})
+            # Save signed PDF to GitHub storage
             if _all:
                 sp = SESSIONS_DIR / f"{token}_signed.pdf"
                 if sp.exists():
-                    _gist_patch({f"signed_{token}.b64": base64.b64encode(sp.read_bytes()).decode()})
+                    _gh_save(f"pdfs/{token}/signed.pdf", sp.read_bytes(), "signed")
+            # Update index
             index = load_sessions_index()
             for entry in index:
                 if entry["token"] == token:
@@ -334,22 +339,23 @@ async def download_signed(token: str):
     signed_path = SESSIONS_DIR / f"{token}_signed.pdf"
     if not signed_path.exists():
         try:
-            d = _gist_get()
-            gf = f"signed_{token}.b64"
-            c = d["files"].get(gf,{}).get("content","")
-            if c:
-                signed_path.write_bytes(base64.b64decode(c))
+            from storage_helper import gh_load as _gh_load
+            # Try to restore signed PDF from GitHub storage
+            signed_bytes = _gh_load(f"pdfs/{token}/signed.pdf")
+            if signed_bytes:
+                signed_path.write_bytes(signed_bytes)
         except Exception as e:
-            print(f"pdf restore error: {e}")
+            print(f"signed pdf restore error: {e}")
     if not signed_path.exists():
         try:
-            d = _gist_get()
+            from storage_helper import gh_load as _gh_load
+            # Regenerate: load signatures from GitHub storage
             sig_images = {}
-            for s in session.get("signers",[]):
-                gf = f"sig_{token}_{_slug(s['role'])}.b64"
-                c = d["files"].get(gf,{}).get("content","")
-                if c:
-                    sig_images[_slug(s["role"])] = "data:image/png;base64," + c
+            for s in session.get("signers", []):
+                slug = _slug(s["role"])
+                sig_bytes_stored = _gh_load(f"sigs/{token}/{slug}.png")
+                if sig_bytes_stored:
+                    sig_images[slug] = "data:image/png;base64," + base64.b64encode(sig_bytes_stored).decode()
             data = session["data"].copy()
             data["output_path"] = str(signed_path)
             data["logo_path"]   = LOGO_PATH
@@ -413,12 +419,15 @@ async def delete_session(token: str):
         if f.exists(): f.unlink()
     async def _del():
         try:
-            d = _gist_get()
-            to_del = {k:None for k in d["files"] if k in (f"session_{token}.json",f"signed_{token}.b64") or k.startswith(f"sig_{token}_")}
-            if to_del:
-                _gist_patch(to_del)
+            from storage_helper import gh_delete as _gh_delete
+            # Delete from Gist
+            _gist_patch({f"session_{token}.json": None})
+            # Delete from GitHub storage
+            for s in ["predavajuci","kupujuci","sprostredkovatel","dlznik"]:
+                _gh_delete(f"sigs/{token}/{s}.png")
+            _gh_delete(f"pdfs/{token}/signed.pdf")
         except Exception as e:
-            print(f"delete gist error: {e}")
+            print(f"delete error: {e}")
     asyncio.create_task(_del())
     return {"ok":True}
 
