@@ -239,13 +239,37 @@ def generate_pdf(company_id, kupujuci_meno, kupujuci_datum, kupujuci_adresa, kup
     story.append(Paragraph(f"V {miesto} d\u0148a {datum}", normal))
     story.append(Spacer(1, 10*mm))
 
-    pod_data = [[
-        Paragraph("__________________________<br/>Sprostredkovate\u013e", pod_sty),
-        Paragraph("__________________________<br/>Pred\u00e1vaj\u00faci", pod_sty),
-        Paragraph("__________________________<br/>Kupuj\u00faci", pod_sty),
-    ]]
+    import io as _io, base64 as _b64
+    _name_map = {
+        'Sprostredkovate\u013e': company['name'],
+        'Pred\u00e1vaj\u00faci': predavajuci_meno,
+        'Kupuj\u00faci': kupujuci_meno,
+    }
+    sig_cells = []
+    name_cells = []
+    for _role in ['Sprostredkovate\u013e', 'Pred\u00e1vaj\u00faci', 'Kupuj\u00faci']:
+        _key = _role.lower()
+        for _c,_r in [(" ","_"),("\u00e1","a"),("\u00ed","i"),("\u00e9","e"),("\u00fa","u"),("\u013e","l"),("\u0161","s"),("\u010d","c"),("\u0165","t"),("\u017e","z")]:
+            _key = _key.replace(_c,_r)
+        _sig_data = (sig_images or {}).get(_key)
+        _person_name = _name_map.get(_role, "")
+        if _sig_data:
+            try:
+                _raw = _b64.b64decode(_sig_data.split(",")[-1])
+                _img = RLImage(_io.BytesIO(_raw), width=45*mm, height=14*mm)
+                sig_cells.append(_img)
+            except:
+                sig_cells.append(Paragraph("__________________________", pod_sty))
+        else:
+            sig_cells.append(Paragraph("__________________________", pod_sty))
+        name_cells.append(Paragraph(f"{_role}<br/><font size=\'8\'>{_person_name}</font>", pod_sty))
+    pod_data = [sig_cells, name_cells]
     t = Table(pod_data, colWidths=[56*mm, 56*mm, 56*mm])
-    t.setStyle(TableStyle([("ALIGN",(0,0),(-1,-1),"CENTER"),("VALIGN",(0,0),(-1,-1),"TOP")]))
+    t.setStyle(TableStyle([
+        ("ALIGN",(0,0),(-1,-1),"CENTER"),
+        ("VALIGN",(0,0),(-1,-1),"TOP"),
+        ("TOPPADDING",(0,1),(-1,1),2),
+    ]))
     story.append(t)
 
     doc.build(story)
