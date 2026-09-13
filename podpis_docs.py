@@ -92,12 +92,12 @@ async def upload_pdf(file: UploadFile = File(...)):
     try:
         import fitz
     except ImportError:
-        raise HTTPException(500, "PyMuPDF nie je nainštalovaný")
+        raise HTTPException(500, "PyMuPDF nie je nainstalovany")
 
     token = str(uuid.uuid4())
     content = await file.read()
     if not content:
-        raise HTTPException(400, "Prázdny súbor")
+        raise HTTPException(400, "Prazdny subor")
 
     pdf_path = DOCS_DIR / f"{token}.pdf"
     pdf_path.write_bytes(content)
@@ -105,7 +105,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     try:
         doc = fitz.open(stream=content, filetype="pdf")
     except Exception as e:
-        raise HTTPException(400, f"Neplatný PDF súbor: {e}")
+        raise HTTPException(400, f"Neplatny PDF subor: {e}")
 
     page_count = len(doc)
     sig_position = None
@@ -194,7 +194,7 @@ def get_page_image(token: str, page_num: int):
     try:
         import fitz
     except ImportError:
-        raise HTTPException(500, "PyMuPDF nie je nainštalovaný")
+        raise HTTPException(500, "PyMuPDF nie je nainstalovany")
 
     pdf_path = DOCS_DIR / f"{token}.pdf"
     if not pdf_path.exists():
@@ -203,11 +203,11 @@ def get_page_image(token: str, page_num: int):
             if b64: pdf_path.write_bytes(base64.b64decode(b64))
         except: pass
     if not pdf_path.exists():
-        raise HTTPException(404, "Dokument nenájdený")
+        raise HTTPException(404, "Dokument nenadeny")
 
     doc = fitz.open(pdf_path)
     if page_num >= len(doc):
-        raise HTTPException(404, "Strana nenájdená")
+        raise HTTPException(404, "Strana nenadena")
     pix = doc[page_num].get_pixmap(matrix=fitz.Matrix(2, 2))
     img_path = DOCS_DIR / f"{token}_p{page_num}.png"
     pix.save(str(img_path))
@@ -222,13 +222,13 @@ def list_documents():
 @router.get("/api/podpis/doc/{token}")
 def get_doc(token: str):
     d = load_doc(token)
-    if not d: raise HTTPException(404, "Dokument nenájdený")
+    if not d: raise HTTPException(404, "Dokument nenadeny")
     return d
 
 @router.post("/api/podpis/doc/{token}/position")
 async def update_position(token: str, request: Request):
     d = load_doc(token)
-    if not d: raise HTTPException(404, "Dokument nenájdený")
+    if not d: raise HTTPException(404, "Dokument nenadeny")
     body = await request.json()
     d["sig_position"] = body.get("sig_position", d["sig_position"])
     save_doc(token, d, to_gist=False)
@@ -240,10 +240,10 @@ async def submit_signature(token: str, request: Request):
     try:
         import fitz
     except ImportError:
-        raise HTTPException(500, "PyMuPDF nie je nainštalovaný")
+        raise HTTPException(500, "PyMuPDF nie je nainstalovany")
 
     d = load_doc(token)
-    if not d: raise HTTPException(404, "Dokument nenájdený")
+    if not d: raise HTTPException(404, "Dokument nenadeny")
 
     body = await request.json()
     sig_data = body.get("signature", "")
@@ -296,11 +296,11 @@ async def download_signed(token: str):
     try:
         import fitz
     except ImportError:
-        raise HTTPException(500, "PyMuPDF nie je nainštalovaný")
+        raise HTTPException(500, "PyMuPDF nie je nainstalovany")
 
     d = load_doc(token)
-    if not d: raise HTTPException(404, "Dokument nenájdený")
-    if not d.get("signed"): raise HTTPException(400, "Dokument nie je podpísaný")
+    if not d: raise HTTPException(404, "Dokument nenadeny")
+    if not d.get("signed"): raise HTTPException(400, "Dokument nie je podpisany")
 
     signed_path = DOCS_DIR / f"{token}_signed.pdf"
     if not signed_path.exists():
@@ -323,12 +323,12 @@ async def download_signed(token: str):
                 if orig_bytes:
                     pdf_path.write_bytes(orig_bytes)
             if not pdf_path.exists():
-                raise HTTPException(404, "Dokument nenájdený — nahrajte a podpíšte znovu")
+                raise HTTPException(404, "Dokument neajdeny - nahrajte a podpiste znovu")
             sig_b64 = None
             if d.get("signature"):
                 sig_b64 = d["signature"].split(",")[-1] if "," in d["signature"] else d["signature"]
             if not sig_b64:
-                raise HTTPException(404, "Podpis nenájdený — podpíšte dokument znovu")
+                raise HTTPException(404, "Podpis nenadeny - podpiste dokument znovu")
             sig_bytes = base64.b64decode(sig_b64)
             pos = d["sig_position"]
             pdf_doc = fitz.open(pdf_path)
