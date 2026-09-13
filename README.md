@@ -47,3 +47,4 @@ Aplikácia beží na: **http://localhost:8000**
 4. Build command: `pip install -r requirements.txt`
 5. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
 # rebuild Wed Jul 29 12:20:39 UTC 2026
+# Sun Sep 13 20:04:05 UTC 2026
