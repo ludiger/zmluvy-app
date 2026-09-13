@@ -44,16 +44,20 @@ def _gist_patch(files):
 
 def load_index():
     try:
-        d = _gist_get()
-        c = d["files"].get(INDEX_FILE, {}).get("content", "")
-        if c: return json.loads(c)
+        from storage_helper import gh_load as _gh_load
+        data = _gh_load("podpis_index.json")
+        if data:
+            return json.loads(data.decode("utf-8"))
     except Exception as e:
         print(f"[podpis] index load error: {e}")
     return []
 
 def save_index(index):
     try:
-        _gist_patch({INDEX_FILE: json.dumps(index, ensure_ascii=False, indent=2)})
+        from storage_helper import gh_save as _gh_save
+        _gh_save("podpis_index.json",
+                 json.dumps(index, ensure_ascii=False, indent=2).encode("utf-8"),
+                 "update index")
     except Exception as e:
         print(f"[podpis] index save error: {e}")
 
