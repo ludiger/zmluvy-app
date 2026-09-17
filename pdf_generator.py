@@ -78,12 +78,12 @@ def generate_pdf(company_id, kupujuci_meno, kupujuci_datum, kupujuci_adresa, kup
     nadpis    = sty("n",  font="DVSans-Bold", size=14, alignment=TA_CENTER, spaceAfter=2*mm, textColor=DARK)
     podnadpis = sty("pn", size=8.5, alignment=TA_CENTER, spaceAfter=5*mm, textColor=GRAY)
     sekcia    = sty("s",  font="DVSans-Bold", size=10, spaceBefore=5*mm, spaceAfter=2*mm, textColor=DARK)
-    normal    = sty("no", size=9.5, spaceAfter=1.5*mm, leading=14)
+    normal    = sty("no", size=9.5, spaceAfter=1.5*mm, leading=14, fontName=_fn)
     bl        = sty("bl", font="DVSans-Bold", size=9.5, spaceAfter=1*mm)
     poz       = sty("po", font="DVSans-Italic", size=8.5, textColor=GRAY, spaceAfter=1.5*mm)
     tl_sty    = sty("tl", font="DVSans-Bold", size=9)
     tv_sty    = sty("tv", size=9)
-    pod_sty   = sty("ps", size=9, alignment=TA_CENTER, spaceBefore=2*mm)
+    pod_sty   = sty("ps", size=9, alignment=TA_CENTER, spaceBefore=2*mm, fontName=_fn)
     it_sty    = sty("it", font="DVSans-Italic", size=8.5, textColor=GRAY, spaceBefore=2*mm, spaceAfter=3*mm)
 
     def hr(bold=False):

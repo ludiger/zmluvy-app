@@ -52,10 +52,10 @@ def generate_pdf_bezucelova(company_id, dlznik_meno, dlznik_datum, dlznik_adresa
     for _fp in _font_paths:
         if _os.path.exists(_fp):
             try:
-                pdfmetrics.registerFont(TTFont("UniSans", _fp))
+                pdfmetrics.registerFont(TTFont("UniSans", _fp, validate=1))
                 for _bp in _bold_paths:
                     if _os.path.exists(_bp):
-                        pdfmetrics.registerFont(TTFont("UniSans-Bold", _bp))
+                        pdfmetrics.registerFont(TTFont("UniSans-Bold", _bp, validate=1))
                         break
                 _use_unicode = True
                 break
@@ -68,11 +68,11 @@ def generate_pdf_bezucelova(company_id, dlznik_meno, dlznik_datum, dlznik_adresa
         base = getSampleStyleSheet()["Normal"]
         return ParagraphStyle(name, parent=base, **kw)
 
-    normal  = sty("n",  fontSize=9,  leading=13, textColor=GRAY, alignment=TA_JUSTIFY, spaceBefore=2*mm)
+    normal  = sty("n",  fontSize=9,  leading=13, textColor=GRAY, alignment=TA_JUSTIFY, spaceBefore=2*mm, fontName=_fn)
     bold    = sty("b",  fontSize=9,  leading=13, textColor=DARK, fontName=_fnb)
     sekcia  = sty("s",  fontSize=10, leading=13, textColor=DARK, fontName=_fnb, spaceBefore=4*mm, spaceAfter=1*mm)
     poz     = sty("pz", fontSize=8,  leading=11, textColor=GRAY, fontName=_fni)
-    pod_sty = sty("ps", size=9, alignment=TA_CENTER, spaceBefore=2*mm)
+    pod_sty = sty("ps", size=9, alignment=TA_CENTER, spaceBefore=2*mm, fontName=_fn)
 
     def hr(thick=False):
         return HRFlowable(width="100%", thickness=2 if thick else 0.5,
@@ -95,11 +95,10 @@ def generate_pdf_bezucelova(company_id, dlznik_meno, dlznik_datum, dlznik_adresa
         except: pass
 
     # Title
-    story.append(Paragraph("ZMLUVA O BEZÚČELOVEJ PÔŽIČKE", sty("t", fontSize=14,
-        fontName=_fnb, textColor=DARK, alignment=TA_CENTER, spaceBefore=2*mm, spaceAfter=2*mm)))
+    story.append(Paragraph("ZMLUVA O BEZÚČELOVEJ PÔŽIČKE", sty("t", fontSize=14, fontName=_fnb, textColor=DARK, alignment=TA_CENTER, spaceBefore=2*mm, spaceAfter=2*mm)))
     story.append(Paragraph(
         "uzatvorená podľa § 657 a nasl. Občianskeho zákonníka č. 40/1964 Zb. v platnom znení",
-        sty("sub", fontSize=8, alignment=TA_CENTER, textColor=GRAY, spaceAfter=4*mm)))
+        sty("sub", fontSize=8, alignment=TA_CENTER, textColor=GRAY, spaceAfter=4*mm, fontName=_fn)))
     story.append(hr(True))
 
     story.append(Paragraph("1. Zmluvné strany", sekcia))
